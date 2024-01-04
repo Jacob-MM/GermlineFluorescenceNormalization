@@ -33,13 +33,9 @@ data_frames <- list()
 
 # Loop through the files and load them as data frames
 for (file in file_list) {
-  if (file_ext(file) %in% c(".csv", ".txt")) {
     df_name <- tools::file_path_sans_ext(basename(file))
     df <- read.csv(file)
     data_frames[[df_name]] <- df
-  } else {
-    cat("Skipping file:", file, " (unsupported file type)\n")
-  }
 }
 
 # Provide a list of loaded data frames
@@ -94,4 +90,27 @@ funfcn <- function(data){
   return(result)
 }
 
+add_dataframes <- function(df_list) {
+  # Initialize the result dataframe with the first dataframe
+  result_df <- df_list[[1]]
+  
+  # Loop through the remaining dataframes and add their second column as an additional column
+  for (i in 2:length(df_list)) {
+    result_df <- cbind(result_df, df_list[[i]][, 2])
+  }
+  
+  return(result_df)
+}
 
+
+result_list <- lapply(data_frames, funfcn)
+
+# Apply the function to the list of dataframes
+result_dataframe <- add_dataframes(result_list)
+
+names <- c('percent',names(data_frames))
+colnames(result_dataframe) <- names
+
+file_path <- file.path(folder_path, "results.csv")
+
+write.csv(result_dataframe,file_path,row.names = FALSE)
